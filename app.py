@@ -27,6 +27,14 @@ def get_tasks():
     conn.close()
     return jsonify([{"id": r[0], "title": r[1], "done": bool(r[2])} for r in rows])
 
+@app.route("/api/stats", methods=["GET"])
+def get_stats():
+    conn = sqlite3.connect(DB)
+    total = conn.execute("SELECT COUNT(*) FROM tasks").fetchone()[0]
+    done = conn.execute("SELECT COUNT(*) FROM tasks WHERE done = 1").fetchone()[0]
+    conn.close()
+    return jsonify({"total": total, "done": done, "left": total - done})
+
 @app.route("/api/tasks", methods=["POST"])
 def add_task():
     title = request.json.get("title", "").strip()

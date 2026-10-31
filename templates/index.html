@@ -12,7 +12,8 @@
   </style>
 </head>
 <body>
-  <h1>Мои задачи</h1>
+    <h1>TODO</h1>
+  <p id="stats"></p>
   <form id="form">
     <input id="input" placeholder="Новая задача..." required>
     <button>Добавить</button>
@@ -24,8 +25,11 @@
   const form = document.getElementById('form');
   const input = document.getElementById('input');
 
-  async function load() {
+    async function load() {
     const tasks = await (await fetch('/api/tasks')).json();
+    const stats = await (await fetch('/api/stats')).json();
+    document.getElementById('stats').textContent =
+      `Всего: ${stats.total} · Готово: ${stats.done} · Осталось: ${stats.left}`;
     list.innerHTML = '';
     tasks.forEach(t => {
       const li = document.createElement('li');
