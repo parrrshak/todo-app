@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>TODO</title>
+  <style>
+    body { font-family: sans-serif; max-width: 500px; margin: 40px auto; }
+    li { list-style: none; margin: 6px 0; display: flex; gap: 8px; align-items: center; }
+    .done span { text-decoration: line-through; color: #999; }
+    button { cursor: pointer; }
+    input { padding: 6px; }
+  </style>
+</head>
+<body>
+  <h1>TODO</h1>
+  <form id="form">
+    <input id="input" placeholder="Новая задача..." required>
+    <button>Добавить</button>
+  </form>
+  <ul id="list"></ul>
+
+<script>
+  const list = document.getElementById('list');
+  const form = document.getElementById('form');
+  const input = document.getElementById('input');
+
+  async function load() {
+    const tasks = await (await fetch('/api/tasks')).json();
+    list.innerHTML = '';
+    tasks.forEach(t => {
+      const li = document.createElement('li');
+      if (t.done) li.classList.add('done');
+      li.innerHTML = `
+        <input type="checkbox" ${t.done ? 'checked' : ''}>
+        <span>${t.title}</span>
+        <button>✕</button>
+      `;
+      li.querySelector('input').onclick = async () => {
+        await fetch(`/api/tasks/${t.id}`, { method: 'PATCH' });
+        load();
+      };
+      li.querySelector('button').onclick = async () => {
+        await fetch(`/api/tasks/${t.id}`, { method: 'DELETE' });
+        load();
+      };
+      list.appendChild(li);
+    });
+  }
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    await fetch('/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: input.value })
+    });
+    input.value = '';
+    load();
+  };
+
+  load();
+</script>
+</body>
+</html>
